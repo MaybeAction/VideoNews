@@ -11,6 +11,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Retrofit;
 
 /**
  * OKHttp解析类
@@ -96,5 +97,25 @@ public class BombClient {
     }
 
 
+
+    private Retrofit retrofit;
+    private UserApi userApi;
+    private NewsApi newsApi;
+
+    //拿到UserApi
+    public UserApi getUserApi(){
+        if (userApi == null){
+            userApi = retrofit.create(UserApi.class);
+        }
+        return userApi;
+    }
+
+    //拿到NewsApi
+    public NewsApi getNewsApi(){
+        if (newsApi == null){
+            newsApi = retrofit.create(NewsApi.class);
+        }
+        return newsApi;
+    }
 
 }
