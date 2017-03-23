@@ -12,64 +12,65 @@ import android.view.WindowManager;
 
 import com.example.maybe.videoplayer.R;
 
-import butterknife.BindView;
 import io.vov.vitamio.widget.MediaController;
 
 /**
- * Created by maybe on 2017/3/19.
+ * Created by Administrator on 2017/3/14 0014.
  */
 
 public class CustomMediaController extends MediaController {
 
     //视频播放控制接口，用于管理视频进度
     private MediaController.MediaPlayerControl mediaPlayerControl;
+
     private AudioManager audioManager;//音频管理
     private Window window;//用于管理视频亮度
+
     private int maxVolume;//最大音量
     private int currentVolume;//当前音量
     private float currentBrightness;//当前亮度
+
     public CustomMediaController(Context context) {
         super(context);
         //音频管理
-            audioManager= (AudioManager) context.getSystemService(context.AUDIO_SERVICE);
+        audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         //最大音量
-            maxVolume=audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
         //用于管理视频亮度
-        window=((Activity)context).getWindow();
+        window = ((Activity)context).getWindow();
     }
 
     //通过重写次方法，来自定义layout
-
     @Override
     protected View makeControllerView() {
-        View view= LayoutInflater.from(getContext()).inflate(
+        View view = LayoutInflater.from(getContext()).inflate(
                 R.layout.view_custom_video_controller,this);
-        initView(view);
-        return super.makeControllerView();
+        initView(view);//初始化视图，设置监听
+        return view;
     }
 
     //获取视频播放控制接口
     @Override
     public void setMediaPlayer(MediaPlayerControl player) {
         super.setMediaPlayer(player);
-        mediaPlayerControl=player;
+        mediaPlayerControl = player;
     }
 
     //初始化视图，设置监听
     //快进快退的监听
     //屏幕亮度，音量的控制
-    private void initView(View view) {
+    private void initView(View view){
         //快进
         findViewById(R.id.btnFastForward).setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View view) {
-                //拿到当前的播放位置
-                long position=mediaPlayerControl.getCurrentPosition();
+            public void onClick(View v) {
+                //拿到当前播放位置
+                long position = mediaPlayerControl.getCurrentPosition();
                 //快进10秒
-                position+=10000;
+                position += 10000;
                 //如果快进10秒后，大于等于总的视频长度，则到头
-                if(position>=mediaPlayerControl.getDuration()){
-                    position=mediaPlayerControl.getDuration();
+                if (position >= mediaPlayerControl.getDuration()){
+                    position = mediaPlayerControl.getDuration();
                 }
                 //否则移动到快进位置
                 mediaPlayerControl.seekTo(position);
@@ -78,11 +79,11 @@ public class CustomMediaController extends MediaController {
         //快退
         findViewById(R.id.btnFastRewind).setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View view) {
-                long position=mediaPlayerControl.getCurrentPosition();
-                position -=10000;
-                if(position<0){
-                    position=0;
+            public void onClick(View v) {
+                long position = mediaPlayerControl.getCurrentPosition();
+                position -= 10000;
+                if (position < 0){
+                    position = 0;
                 }
                 mediaPlayerControl.seekTo(position);
             }
@@ -136,8 +137,6 @@ public class CustomMediaController extends MediaController {
         });
     }
 
-
-
     //调整音量的方法
     private void adjustVolume(float percentage){
         //最终音量 = 最大音量 * 改变的百分比 + 当前音量
@@ -148,7 +147,7 @@ public class CustomMediaController extends MediaController {
         volume = volume < 0 ? 0 : volume;
         //设置音量
         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,
-                volume,AudioManager.FLAG_SHOW_UI);
+                volume, AudioManager.FLAG_SHOW_UI);
     }
 
     //调整亮度的方法（最小亮度 = 0 ，最大亮度 = 1.0f）

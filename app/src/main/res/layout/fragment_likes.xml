@@ -74,10 +74,10 @@
         android:background="@color/pink" />
 
     <!-- 收藏的新闻列表 -->
-    <com.fuicuiedu.idedemo.videonews.ui.likes.LikesListView
+    <com.example.maybe.videonews.ui.likes.LikesListView
         android:id="@+id/likesListView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/lay_8" />
+        android:layout_marginTop="@dimen/lay_8"></com.example.maybe.videonews.ui.likes.LikesListView>
 
 </LinearLayout>

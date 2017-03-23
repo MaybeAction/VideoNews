@@ -114,6 +114,11 @@ public class MainActivity extends MyBaseActivity {
         }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+    }
 
     @Override
     protected void onDestroy() {

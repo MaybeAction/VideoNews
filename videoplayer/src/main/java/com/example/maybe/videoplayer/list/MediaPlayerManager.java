@@ -8,6 +8,7 @@ package com.example.maybe.videoplayer.list;
 
 
 import android.content.Context;
+import android.util.Log;
 import android.view.Surface;
 
 import java.io.IOException;
@@ -90,6 +91,7 @@ public class MediaPlayerManager {
         });
     }
 
+
     //释放Mediaplayer
     public void onPause(){
         stopPlayer();
@@ -126,6 +128,7 @@ public class MediaPlayerManager {
             e.printStackTrace();
         }
     }
+
     //停止播放，更新UI（通过接口callBack）
     public void stopPlayer(){
         //判断当前是否有视频播放
@@ -134,6 +137,8 @@ public class MediaPlayerManager {
         for (OnPlaybackListener listener : onPlaybackListeners){
             listener.onStopPlay(videoId);
         }
+        if (mediaPlayer == null) return;
+
         //停止播放，并且重置
         if (mediaPlayer.isPlaying()){
             mediaPlayer.stop();

@@ -3,8 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.fuicuiedu.idedemo.videonews.ui.news.NewsListView
+    <com.example.maybe.videonews.ui.news.NewsListView
         android:id="@+id/newsListView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"></com.example.maybe.videonews.ui.news.NewsListView>
 </RelativeLayout>
