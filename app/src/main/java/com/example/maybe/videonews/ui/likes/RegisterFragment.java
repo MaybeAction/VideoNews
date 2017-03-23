@@ -4,28 +4,25 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
-
 import com.example.maybe.videonews.R;
 import com.example.maybe.videonews.bombapi.BombClient;
+import com.example.maybe.videonews.bombapi.UserApi;
+import com.example.maybe.videonews.bombapi.entity.UserEntity;
+import com.example.maybe.videonews.bombapi.result.ErrorResult;
 import com.example.maybe.videonews.bombapi.result.UserResult;
 import com.example.maybe.videonews.commons.ToastUtils;
 import com.google.gson.Gson;
-
 import java.io.IOException;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
+
 
 /**
  * Created by Administrator on 2016/12/21 0021.
@@ -61,32 +58,60 @@ public class RegisterFragment extends DialogFragment {
             return;
         }
 
-        // TODO: 2017/3/15 0015 注册的网络请求
-        Call call = BombClient.getInstance().register(username,password);
-        call.enqueue(new Callback() {
+        //网络模块，注册请求
+        //注册api
+        UserApi userApi = BombClient.getInstance().getUserApi();
+        //构建用户实体类
+        UserEntity userEntity = new UserEntity(username,password);
+        //拿到call模型
+        retrofit2.Call<UserResult> call = userApi.register(userEntity);
+        //执行网络请求
+        call.enqueue(new retrofit2.Callback<UserResult>() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("TAG","没有网络，或者网络连接超时");
-                //这是后台线程！！！
+            public void onResponse(retrofit2.Call<UserResult> call, retrofit2.Response<UserResult> response) {
+                //隐藏加载圈圈
+                mBtnRegister.setVisibility(View.VISIBLE);
+                //注册失败
+                if (!response.isSuccessful()){
+                    try {
+                        //拿到失败的json
+                        String error = response.errorBody().string();
+                        //通过gson将拿到的json数据解析成失败结果类
+                        ErrorResult errorResult = new Gson().fromJson(error,ErrorResult.class);
+                        //提示用户注册失败
+                        ToastUtils.showShort(errorResult.getError());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return;
+                }
+                //注册成功
+                UserResult userResult = response.body();
+                listener.registerSuccess(username,userResult.getObjectId());
+                //提示注册成功
+                ToastUtils.showShort(R.string.register_success);
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                    if(response.isSuccessful()){
-                        Log.e("okhttp","请求成功，响应吗200-299");
-                        //拿到响应体的json格式的字符串
-                        String json=response.body().string();
-                        //Gson 是一个用来生成，解析json数据的第三方库
-                        //生成，可以将一个类（实体类），生成为一串json格式的数据
-                        //解析，将一串json格式的数据，生成为一个类（结果类）
-                        UserResult userResult = new Gson().fromJson(json,UserResult.class);
-                        Log.e("okhttp","objectId = " + userResult.getObjectId());
-                    }else{
-                        Log.e("okhttp","请求失败，响应码= "+response.code());
-                    }
+            public void onFailure(retrofit2.Call<UserResult> call, Throwable t) {
+                //隐藏圈圈
+                mBtnRegister.setVisibility(View.VISIBLE);
+                //提示失败原因
+                ToastUtils.showShort(t.getMessage());
             }
         });
+    }
 
+    //当注册成功会触发的方法
+    public interface OnRegisterSuccessListener{
+        /** 当注册成功时，来调用*/
+        void registerSuccess(String username,String objectId);
+    }
+
+    private OnRegisterSuccessListener listener;
+
+    public void setListener(OnRegisterSuccessListener listener){
+        this.listener = listener;
     }
 
 }

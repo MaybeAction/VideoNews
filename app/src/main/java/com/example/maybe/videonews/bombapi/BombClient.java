@@ -2,6 +2,7 @@ package com.example.maybe.videonews.bombapi;
 
 import com.example.maybe.videonews.bombapi.entity.UserEntity;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,6 +13,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * OKHttp解析类
@@ -42,6 +44,28 @@ public class BombClient {
                 //添加日志拦截器
                 .addInterceptor(httpLoggingInterceptor)
                 .build();
+
+
+        //让gson能够将bomb返回的时间戳自动转换为Date对象
+        Gson gson = new GsonBuilder()
+                .setDateFormat("yyyy-mm-dd HH:mm:ss")
+                .create();
+
+        retrofit = new Retrofit.Builder()
+                .client(okHttpClient)//目的是使用okhttpclient身上的拦截器
+                .baseUrl("https://api.bmob.cn/")
+                //添加转换器
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+
+
+        //构建retrofit_cloud
+        retrofit_cloud = new Retrofit.Builder()
+                .client(okHttpClient)
+                .baseUrl("http://cloud.bmob.cn/")
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+
     }
 
     /**
@@ -101,6 +125,8 @@ public class BombClient {
     private Retrofit retrofit;
     private UserApi userApi;
     private NewsApi newsApi;
+    private Retrofit retrofit_cloud;//用于新接口
+    private NewsApi newsApi_cloud;//用于新接口
 
     //拿到UserApi
     public UserApi getUserApi(){
@@ -116,6 +142,14 @@ public class BombClient {
             newsApi = retrofit.create(NewsApi.class);
         }
         return newsApi;
+    }
+
+    //拿到newsApi_cloud
+    public NewsApi getNewsApi_cloud(){
+        if (newsApi_cloud == null){
+            newsApi_cloud = retrofit_cloud.create(NewsApi.class);
+        }
+        return newsApi_cloud;
     }
 
 }

@@ -2,6 +2,7 @@ package com.example.maybe.videonews.ui.likes;
 
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -14,6 +15,8 @@ import android.view.Window;
 import android.widget.Button;
 import com.example.maybe.videonews.R;
 import com.example.maybe.videonews.bombapi.BombClient;
+import com.example.maybe.videonews.bombapi.UserApi;
+import com.example.maybe.videonews.bombapi.result.ErrorResult;
 import com.example.maybe.videonews.bombapi.result.UserResult;
 import com.example.maybe.videonews.commons.ToastUtils;
 import com.google.gson.Gson;
@@ -34,11 +37,11 @@ public class LoginFragment extends DialogFragment {
     private Unbinder mUnbinder;
 
     @BindView(R.id.etUsername)
-    TextInputEditText etUsername;
+    TextInputEditText mEtUsername;
     @BindView(R.id.etPassword)
-    TextInputEditText etPassword;
+    TextInputEditText mEtPassword;
     @BindView(R.id.btnLogin)
-    Button btnLogin;
+    Button mBtnLogin;
 
 
     @Override
@@ -53,43 +56,71 @@ public class LoginFragment extends DialogFragment {
 
     @OnClick(R.id.btnLogin)
     public void onClick(){
-            String username=etUsername.getText().toString();
-            String password=etPassword.getText().toString();
-            //用户名和密码不能为空
-        if(TextUtils.isEmpty(username)||TextUtils.isEmpty(password)){
+        Log.e("okhttp","点击了！");
+        final String username = mEtUsername.getText().toString();
+        String password = mEtPassword.getText().toString();
+        //用户名和密码不能为空
+        if (TextUtils.isEmpty(username) || TextUtils.isEmpty(password)){
             ToastUtils.showShort(R.string.username_or_password_can_not_be_null);
             return;
         }
-        Call call= BombClient.getInstance().login(username,password);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
 
+        //显示进度条
+        mBtnLogin.setVisibility(View.GONE);
+
+        //登录网络请求
+        UserApi userApi = BombClient.getInstance().getUserApi();
+        retrofit2.Call<UserResult> call = userApi.login(username,password);
+        call.enqueue(new retrofit2.Callback<UserResult>() {
+            @Override
+            public void onResponse(retrofit2.Call<UserResult> call, retrofit2.Response<UserResult> response) {
+                //隐藏进度条
+                mBtnLogin.setVisibility(View.VISIBLE);
+                //登录未成功
+                if (!response.isSuccessful()){
+                    try {
+                        String error = response.errorBody().string();
+                        ErrorResult errorResult = new Gson().fromJson(error,ErrorResult.class);
+                        ToastUtils.showShort(errorResult.getError());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return;
+                }
+                //登录成功
+                UserResult result = response.body();
+                listener.loginSuccess(username,result.getObjectId());
+                ToastUtils.showShort(R.string.login_success);
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if(response.isSuccessful()){
-                    Log.e("okhttp","请求成功，响应吗200-299");
-                    //拿到响应体的json格式的字符串
-                    String json=response.body().string();
-                    //Gson 是一个用来生成，解析json数据的第三方库
-                    //生成，可以将一个类（实体类），生成为一串json格式的数据
-                    //解析，将一串json格式的数据，生成为一个类（结果类）
-                    UserResult userResult = new Gson().fromJson(json,UserResult.class);
-                    Log.e("okhttp","objectId = " + userResult.getObjectId());
-                    Log.e("okhttp","username = " + userResult.getUsername());
-                    Log.e("okhttp","updatedAt = " + userResult.getUpdatedAt());
-                }else{
-                    Log.e("okhttp","请求失败，响应码= "+response.code());
-                }
+            public void onFailure(retrofit2.Call<UserResult> call, Throwable t) {
+                //隐藏进度条
+                mBtnLogin.setVisibility(View.VISIBLE);
+                ToastUtils.showShort(t.getMessage());
             }
         });
-    }
 
+    }
     @Override
     public void onDestroy() {
         super.onDestroy();
         mUnbinder.unbind();
+    }
+
+
+
+    //当登录成功之后触发的方法
+    public interface OnLoginSuccessListener {
+        /**
+         * 当登录成功时，将来调用
+         */
+        void loginSuccess(String username, String objectId);
+    }
+
+    private OnLoginSuccessListener listener;
+
+    public void setListener(@NonNull OnLoginSuccessListener listener) {
+        this.listener = listener;
     }
 }
