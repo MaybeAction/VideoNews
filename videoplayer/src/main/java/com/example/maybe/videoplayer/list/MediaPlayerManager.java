@@ -137,6 +137,7 @@ public class MediaPlayerManager {
         for (OnPlaybackListener listener : onPlaybackListeners){
             listener.onStopPlay(videoId);
         }
+
         if (mediaPlayer == null) return;
 
         //停止播放，并且重置

@@ -7,10 +7,8 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import com.example.maybe.videonews.R;
 import com.example.maybe.videoplayer.list.MediaPlayerManager;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 

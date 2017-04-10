@@ -3,10 +3,6 @@ package com.example.maybe.videonews.bombapi;
 import com.example.maybe.videonews.bombapi.entity.UserEntity;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

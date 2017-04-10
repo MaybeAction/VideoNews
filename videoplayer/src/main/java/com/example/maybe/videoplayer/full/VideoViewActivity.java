@@ -89,6 +89,8 @@ public class VideoViewActivity extends AppCompatActivity {
                 mediaPlayer.setBufferSize(1024 * 512);
             }
         });
+
+
         //缓冲第二步，信息监听中，监听缓冲状态，拿到缓冲速度
         videoView.setOnInfoListener(new MediaPlayer.OnInfoListener() {
             @Override
